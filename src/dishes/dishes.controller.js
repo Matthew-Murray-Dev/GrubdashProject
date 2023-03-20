@@ -27,38 +27,39 @@ function list(req, res) {
 }
 
 function read(req, res) {
-  const dishId = Number(req.params.dishId);
-  const foundDish = dishes.find((dish) => (dish.id == dishId));
-  
-  res.json({ data: foundDish });
+  const dish = res.locals.dish;
+
+    res.json({ data: dish })
 }
 
 function update(req, res) {
-  const dishId = req.params.dishId;
-  const foundDish = dishes.find((dish) => (dish.id === dishId));
+const dish = res.locals.dish;
+    const index = res.locals.index;
 
   const { data: { name,description,price,image_url } = {} } = req.body;
 
-  foundDish.name = name;
-  foundDish.description = description;
-  foundDish.price=price;
-  foundDish.image_url=image_url;
+  dish.name = name;
+  dish.description = description;
+  dish.price=price;
+ dish.image_url=image_url;
 
-  res.json({ data: foundDish });
+  res.json({ data: dish });
 }
 
 //~~~~Validation functions~~~~~~~
 function dishExists(req, res, next) {
   const dishId = req.params.dishId;
-   const foundDish = dishes.find((dish) => (dish.id == dishId));
+   const dishIndex = dishes.findIndex((dish) => (dish.id == dishId));
  
-  if (foundDish) {
-    return next();
-  }
-  next({
+  if (dishIndex>-1) {
+    res.locals.dish = dishes[dishIndex];
+        res.locals.index = dishIndex;
+    next();
+  } else{next({
     status: 404,
-    message: `Dish does not exist: ${req.params.dishId}`,
-  });
+    message: `Dish does not exist: ${dishId}`,
+  });}
+  
 }
 
 function idMisMatch(req, res, next){
