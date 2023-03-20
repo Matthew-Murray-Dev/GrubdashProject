@@ -34,41 +34,37 @@ function read(req, res, next) {
 };
 
 function update(req, res) {
-  const orderId = req.params.orderId;
-  const foundOrder = orders.find((order) => (order.id === orderId));
+   const order = res.locals.order;
+    const index = res.locals.index;
 
   const { data: { deliverTo,mobileNumber,dishes } = {} } = req.body;
 
-  foundOrder.deliverTo = deliverTo;
-  foundOrder.mobileNumber = mobileNumber;
-  foundOrder.dishes=dishes;
+  order.deliverTo = deliverTo;
+  order.mobileNumber = mobileNumber;
+  order.dishes=dishes;
   
-  res.json({ data: foundOrder });
+  res.json({ data: order });
 }
 
 function destroy(req, res) {
-  const { orderId } = req.params;
-  const index = orders.findIndex((order) => order.id == orderId);
-  if (index > -1) {
-    orders.splice(index, 1);
-  }
+ const index = res.locals.index;
+      orders.splice(index, 1);
+  
   res.sendStatus(204);
 }
 
 //~~~~~~Validation Functions~~~~~~~~
-function orderExists(req, res, next) {
-  const { orderId } = req.params;
-  const foundOrder = orders.find(order => order.id == orderId);
-  
-   if (foundOrder) {
-   
-    res.locals.order = foundOrder;
-    return next();
-  }
-  next({
+function orderExists(req, res, next) { const orderId = req.params.orderId;
+   const orderIndex = orders.findIndex((order) => (order.id == orderId));
+ 
+  if (orderIndex>-1) {
+    res.locals.order = orders[orderIndex];
+        res.locals.index = orderIndex;
+    next();
+  } else{next({
     status: 404,
-    message: `order id not found: ${orderId}`,
-  });
+    message: `Order does not exist: ${orderId}`,
+  });}
 };
 
 function hasDeliverTo(req, res, next) {
